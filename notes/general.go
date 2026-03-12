@@ -17,16 +17,27 @@ func LoadNotes() []Note {
 	return notes
 }
 
-func SaveNotes(notes []Note) error {
-	// В GORM сохранение происходит через Create/Update, но для простоты перезапишем
-	// Сначала удалим все, потом добавим новые
-	DB.Unscoped().Delete(&Note{}) // Удаляем все (включая soft delete)
-	for _, note := range notes {
-		if err := DB.Create(&note).Error; err != nil {
-			return err
-		}
+// TODO - SaveNotes - сохранять все заметки не перезаписывая, а добавляя новые и обновляя существующие
+// func SaveNotes(notes []Note) error {
+// 	// В GORM сохранение происходит через Create/Update, но для простоты перезапишем
+// 	// Сначала удалим все, потом добавим новые
+// 	DB.Unscoped().Delete(&Note{}) // Удаляем все (включая soft delete)
+// 	for _, note := range notes {
+// 		if err := DB.Create(&note).Error; err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
+
+func SaveNote(note Note) error {
+	if note.ID == 0 {
+		// Новая заметка
+		return DB.Create(&note).Error
+	} else {
+		// Существующая заметка - обновляем
+		return DB.Save(&note).Error
 	}
-	return nil
 }
 
 func GetNoteByID(id int) (Note, bool) {

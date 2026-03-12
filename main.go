@@ -11,7 +11,7 @@ import (
 
 var reader = bufio.NewReader(os.Stdin)
 
-const maxactions = 8
+const maxactions = 9
 
 func main() {
 	notes.InitDB()
@@ -21,18 +21,20 @@ func main() {
 		num := chooseAction()
 
 		switch num {
+		case 0:
+			actions()
 		case 1:
 			notes.AddNote()
 		case 2:
-			notes.ShowAll()
+			notes.Update()
 		case 3:
-			notes.ShowNoteByChoice()
+			notes.ShowAll()
 		case 4:
-			notes.DeleteNoteByChoice()
+			notes.ShowNoteByChoice()
 		case 5:
-			notes.DeleteAllNotes()
+			notes.DeleteNoteByChoice()
 		case 6:
-			actions()
+			notes.DeleteAllNotes()
 		case 7:
 			notes.PrintCat()
 		case 8:
@@ -45,12 +47,13 @@ func main() {
 
 func actions() {
 	fmt.Println(`
+	0 - Показать действия
 	1 - Добавить заметку
-	2 - Показать все заметки
-	3 - Показать заметку по номеру
-	4 - Удалить заметку по номеру
-	5 - Удалить ВСЕ
-	6 - Показать действия
+	2 - Изменить заметку
+	3 - Показать все заметки
+	4 - Показать заметку по номеру
+	5 - Удалить заметку по номеру
+	6 - Удалить ВСЕ
 	7 - Нарисовать котика
 	8 - Выход
 	`)
@@ -63,7 +66,7 @@ func chooseAction() int {
 		input = strings.TrimSpace(input)
 
 		num, err := strconv.Atoi(input)
-		if err != nil || num < 1 || num > maxactions {
+		if err != nil || num < 0 || num > maxactions {
 			fmt.Printf("❌ Пожалуйста, введите число от 1 до %d!\n", maxactions)
 			continue
 		}
