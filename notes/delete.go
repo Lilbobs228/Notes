@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func DeleteNote(id uint) {
@@ -15,26 +17,18 @@ func DeleteNote(id uint) {
 	} else {
 		fmt.Println("Заметка успешно удалена!")
 	}
+	RemoveNoteFromCache(id)
 }
 
 func DeleteNoteByChoice() {
-	var notes []Note
-	result := DB.Find(&notes)
-	if result.Error != nil {
-		fmt.Println("Ошибка загрузки заметок:", result.Error)
+	exists, err := ShowAvailableNotes()
+	if err != nil {
+		fmt.Println("Ошибка при загрузке заметок:", err)
 		return
 	}
-
-	if len(notes) == 0 {
-		fmt.Println("❌ Доступный заметок нет")
+	if !exists {
 		return
 	}
-
-	fmt.Println("\n========== ДОСТУПНЫЕ ЗАМЕТКИ ==========")
-	for _, note := range notes {
-		fmt.Printf("[%d] %s\n", note.ID, note.Title)
-	}
-	fmt.Println("=======================================")
 
 	fmt.Print("Ваш выбор: ")
 	inp, _ := Reader.ReadString('\n')
@@ -77,10 +71,11 @@ func DeleteAllNotes() {
 }
 
 func DeleteAll() {
-	result := DB.Unscoped().Delete(&Note{})
+	result := DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Unscoped().Delete(&Note{})
 	if result.Error != nil {
 		fmt.Println("Ошибка при удалении заметок:", result.Error)
 	} else {
 		fmt.Printf("Удалено %d заметок!\n", result.RowsAffected)
 	}
+	ClearCache()
 }

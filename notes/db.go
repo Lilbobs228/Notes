@@ -1,6 +1,7 @@
 package notes
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,7 @@ import (
 )
 
 var DB *gorm.DB
+var Reader *bufio.Reader
 
 type Note struct {
 	gorm.Model

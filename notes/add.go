@@ -25,4 +25,5 @@ func AddNote() {
 	} else {
 		fmt.Println("Заметка успешно добавлена!")
 	}
+	AddNoteToCache(newNote)
 }

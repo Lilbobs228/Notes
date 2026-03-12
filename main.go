@@ -16,6 +16,7 @@ const maxactions = 9
 func main() {
 	notes.InitDB()
 	notes.Reader = reader
+	notes.InitializeCacheFile()
 	actions()
 	for true {
 		num := chooseAction()

@@ -6,23 +6,14 @@ import (
 )
 
 func Update() {
-	var notes []Note
-	result := DB.Find(&notes)
-	if result.Error != nil {
-		fmt.Println("Ошибка загрузки заметок:", result.Error)
+	exists, err := ShowAvailableNotes()
+	if err != nil {
+		fmt.Println("Ошибка при загрузке заметок:", err)
 		return
 	}
-
-	if len(notes) == 0 {
-		fmt.Println("❌ Доступный заметок нет")
+	if !exists {
 		return
 	}
-
-	fmt.Println("\n========== ДОСТУПНЫЕ ЗАМЕТКИ ==========")
-	for _, note := range notes {
-		fmt.Printf("[%d] %s\n", note.ID, note.Title)
-	}
-	fmt.Println("=======================================")
 
 	var inp uint
 	fmt.Print("Ваш выбор: ")
@@ -33,10 +24,13 @@ func Update() {
 
 func UpdateNote(id uint) {
 	var note Note
-	result := DB.First(&note, id)
-	if result.Error != nil {
-		fmt.Printf("❌ Заметка с номером %d не найдена.\n", id)
-		return
+	note, exists := GetNoteFromCache(id)
+	if !exists {
+		result := DB.First(&note, id)
+		if result.Error != nil {
+			fmt.Printf("❌ Заметка с номером %d не найдена.\n", id)
+			return
+		}
 	}
 	fmt.Printf("Введите название заметки: ")
 	note.Title, _ = Reader.ReadString('\n')
@@ -46,5 +40,19 @@ func UpdateNote(id uint) {
 	note.Content, _ = Reader.ReadString('\n')
 	note.Content = strings.TrimSpace(note.Content)
 
-	DB.Save(note)
+	fmt.Print("Вы уверены? Данные будут обновлены. (y/n): ")
+	approve, _ := Reader.ReadString('\n')
+	approve = strings.TrimSpace(approve)
+
+	if approve == "y" || approve == "Y" {
+		result := DB.Save(&note)
+		if result.Error != nil {
+			fmt.Println("Ошибка при обновлении заметки:", result.Error)
+		} else {
+			fmt.Println("Заметка успешно обновлена!")
+			AddNoteToCache(note)
+		}
+	} else {
+		fmt.Println("Удаление отменено")
+	}
 }

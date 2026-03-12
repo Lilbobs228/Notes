@@ -1,50 +1,56 @@
 package notes
 
-import (
-	"bufio"
-	"log"
-)
+import "fmt"
 
-var Reader *bufio.Reader
+var cache = make(map[uint]Note)
 
-func LoadNotes() []Note {
-	var notes []Note
-	result := DB.Find(&notes)
-	if result.Error != nil {
-		log.Println("Error loading notes:", result.Error)
-		return []Note{}
+func GetNoteFromCache(id uint) (Note, bool) {
+	note, exists := cache[id]
+	return note, exists
+}
+
+func AddNoteToCache(note Note) {
+	cache[note.ID] = note
+	SaveCacheToFile()
+}
+
+func RemoveNoteFromCache(id uint) {
+	delete(cache, id)
+	SaveCacheToFile()
+}
+
+func ClearCache() {
+	cache = make(map[uint]Note)
+	SaveCacheToFile()
+}
+
+func GetAllNotesFromCache() []Note {
+	notes := make([]Note, 0, len(cache))
+	for _, note := range cache {
+		notes = append(notes, note)
 	}
 	return notes
 }
 
-// TODO - SaveNotes - сохранять все заметки не перезаписывая, а добавляя новые и обновляя существующие
-// func SaveNotes(notes []Note) error {
-// 	// В GORM сохранение происходит через Create/Update, но для простоты перезапишем
-// 	// Сначала удалим все, потом добавим новые
-// 	DB.Unscoped().Delete(&Note{}) // Удаляем все (включая soft delete)
-// 	for _, note := range notes {
-// 		if err := DB.Create(&note).Error; err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-
-func SaveNote(note Note) error {
-	if note.ID == 0 {
-		// Новая заметка
-		return DB.Create(&note).Error
-	} else {
-		// Существующая заметка - обновляем
-		return DB.Save(&note).Error
+func ShowAvailableNotes() (bool, error) {
+	var notes []Note
+	notes = GetAllNotesFromCache()
+	if len(notes) == 0 {
+		result := DB.Find(&notes)
+		if result.Error != nil {
+			fmt.Println("Ошибка загрузки заметок:", result.Error)
+			return false, result.Error
+		}
 	}
-}
 
-func GetNoteByID(id int) (Note, bool) {
-	var note Note
-	result := DB.First(&note, id)
-	if result.Error != nil {
-		return Note{}, false
+	if len(notes) == 0 {
+		fmt.Println("❌ Доступный заметок нет")
+		return false, nil
 	}
-	return note, true
+	fmt.Println("\n========== ДОСТУПНЫЕ ЗАМЕТКИ ==========")
+	for _, note := range notes {
+		fmt.Printf("[%d] %s\n", note.ID, note.Title)
+	}
+	fmt.Println("=======================================")
+	return true, nil
 }
