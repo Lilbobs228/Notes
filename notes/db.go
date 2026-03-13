@@ -1,7 +1,6 @@
 package notes
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -9,16 +8,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-var DB *gorm.DB
-var Reader *bufio.Reader
-
-type Note struct {
-	gorm.Model
-	ID      uint   `gorm:"primaryKey"`
-	Title   string `gorm:"not null"`
-	Content string `gorm:"not null"`
-}
 
 func InitDB() {
 	dsn := os.Getenv("DATABASE_URL")

@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// TODO: Во время очистки кэша ClearNoteFromCache, брать данные из бд, так как в кэше может не быть всех заметок.
 var reader = bufio.NewReader(os.Stdin)
 
 const maxactions = 9
@@ -20,6 +21,10 @@ func main() {
 	actions()
 	for true {
 		num := chooseAction()
+
+		go func() {
+			notes.ClearNoteFromCache()
+		}()
 
 		switch num {
 		case 0:
@@ -39,6 +44,8 @@ func main() {
 		case 7:
 			notes.PrintCat()
 		case 8:
+			notes.AutoAdd()
+		case 9:
 			fmt.Println("👋 До свидания!")
 			os.Exit(0)
 		}
@@ -56,7 +63,8 @@ func actions() {
 	5 - Удалить заметку по номеру
 	6 - Удалить ВСЕ
 	7 - Нарисовать котика
-	8 - Выход
+	8 - Автоматически добавить 3 заметки
+	9 - Выход
 	`)
 }
 

@@ -27,3 +27,23 @@ func AddNote() {
 	}
 	AddNoteToCache(newNote)
 }
+
+func AutoAdd() {
+	for i := 0; i < 3; i++ {
+		title := fmt.Sprintf("Автоматический заголовок %d", i+1)
+		content := fmt.Sprintf("Автоматическое содержание %d", i+1)
+
+		newNote := Note{
+			Title:   title,
+			Content: content,
+		}
+
+		err := DB.Create(&newNote).Error
+		if err != nil {
+			fmt.Println("Ошибка при добавлении заметки: ", err)
+		} else {
+			fmt.Println("Заметка успешно добавлена!")
+		}
+		AddNoteToCache(newNote)
+	}
+}

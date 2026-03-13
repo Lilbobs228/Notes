@@ -5,12 +5,14 @@ import "fmt"
 func ShowAll() {
 	var notes []Note
 	notes = GetAllNotesFromCache()
+	isFromCache := true
 	if len(notes) == 0 {
 		result := DB.Find(&notes)
 		if result.Error != nil {
 			fmt.Println("Ошибка загрузки заметок:", result.Error)
 			return
 		}
+		isFromCache = false
 	}
 
 	if len(notes) == 0 {
@@ -22,7 +24,10 @@ func ShowAll() {
 	for _, note := range notes {
 		fmt.Printf("\n[%d] %s\n", note.ID, note.Title)
 		fmt.Printf("\t%s\n", note.Content)
-		AddNoteToCache(note)
+		if !isFromCache {
+			fmt.Printf("Заметка #%d загружена из базы данных и добавлена в кэш.\n", note.ID)
+			AddNoteToCache(note)
+		}
 	}
 	fmt.Println("=================")
 }
@@ -30,12 +35,18 @@ func ShowAll() {
 func ShowNote(id uint) {
 	var note Note
 	note, exists := GetNoteFromCache(id)
+	isFromCache := true
 	if !exists {
 		result := DB.First(&note, id)
 		if result.Error != nil {
 			fmt.Printf("❌ Заметка с номером %d не найдена.\n", id)
 			return
 		}
+		isFromCache = false
+	}
+
+	if !isFromCache {
+		fmt.Printf("Заметка #%d загружена из базы данных и добавлена в кэш.\n", note.ID)
 		AddNoteToCache(note)
 	}
 
@@ -60,4 +71,27 @@ func ShowNoteByChoice() {
 	fmt.Scan(&inp)
 
 	ShowNote(inp)
+}
+
+func ShowAvailableNotes() (bool, error) {
+	var notes []Note
+	notes = GetAllNotesFromCache()
+	if len(notes) == 0 {
+		result := DB.Find(&notes)
+		if result.Error != nil {
+			fmt.Println("Ошибка загрузки заметок:", result.Error)
+			return false, result.Error
+		}
+	}
+
+	if len(notes) == 0 {
+		fmt.Println("❌ Доступный заметок нет")
+		return false, nil
+	}
+	fmt.Println("\n========== ДОСТУПНЫЕ ЗАМЕТКИ ==========")
+	for _, note := range notes {
+		fmt.Printf("[%d] %s\n", note.ID, note.Title)
+	}
+	fmt.Println("=======================================")
+	return true, nil
 }
