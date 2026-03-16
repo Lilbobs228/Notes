@@ -76,6 +76,6 @@ func DeleteAll() {
 		fmt.Println("Ошибка при удалении заметок:", result.Error)
 	} else {
 		fmt.Printf("Удалено %d заметок!\n", result.RowsAffected)
+		RemoveAllNotesFromCache()
 	}
-	ClearCache()
 }

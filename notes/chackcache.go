@@ -17,7 +17,13 @@ func InitializeCacheFile() {
 }
 
 func SaveCacheToFile() {
-	notes := GetAllNotesFromCache()
+	mu.RLock()
+	notes := make([]Note, 0, len(cache))
+	for _, note := range cache {
+		notes = append(notes, note)
+	}
+	mu.RUnlock()
+
 	data, err := json.MarshalIndent(notes, "", "  ")
 	if err != nil {
 		return

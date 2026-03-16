@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// TODO: Во время очистки кэша ClearNoteFromCache, брать данные из бд, так как в кэше может не быть всех заметок.
+// TODO: Очищать кэш не по дате его создания, а по дате последнего доступа. И при каждом доступе обновлять эту дату.
 var reader = bufio.NewReader(os.Stdin)
 
 const maxactions = 9

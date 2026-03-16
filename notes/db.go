@@ -12,7 +12,7 @@ import (
 func InitDB() {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "host=localhost user=postgres password=newpassword dbname=notes port=5432 sslmode=disable"
+		dsn = "host=localhost user=postgres password=newpassword dbname=test port=5432 sslmode=disable"
 	}
 
 	var err error
@@ -21,7 +21,6 @@ func InitDB() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Автомиграция
 	err = DB.AutoMigrate(&Note{})
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

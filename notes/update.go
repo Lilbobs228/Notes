@@ -24,14 +24,24 @@ func Update() {
 
 func UpdateNote(id uint) {
 	var note Note
-	note, exists := GetNoteFromCache(id)
-	if !exists {
+	isFromCache := false
+
+	if !ShouldBypassCache() {
+		var exists bool
+		note, exists = GetNoteFromCache(id)
+		if exists {
+			isFromCache = true
+		}
+	}
+
+	if !isFromCache {
 		result := DB.First(&note, id)
 		if result.Error != nil {
 			fmt.Printf("❌ Заметка с номером %d не найдена.\n", id)
 			return
 		}
 	}
+
 	fmt.Printf("Введите название заметки: ")
 	note.Title, _ = Reader.ReadString('\n')
 	note.Title = strings.TrimSpace(note.Title)
@@ -50,9 +60,10 @@ func UpdateNote(id uint) {
 			fmt.Println("Ошибка при обновлении заметки:", result.Error)
 		} else {
 			fmt.Println("Заметка успешно обновлена!")
+			RemoveNoteFromCache(id)
 			AddNoteToCache(note)
 		}
 	} else {
-		fmt.Println("Удаление отменено")
+		fmt.Println("Обновление отменено")
 	}
 }
